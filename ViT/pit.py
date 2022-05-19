@@ -65,7 +65,7 @@ class PiT(nn.Module):
 
         self.patch_drop = nn.Dropout(dropout)
         self.cls_token = nn.Parameter(torch.randn(1, 1, hid_dim))
-        self.pos_embed = nn.Parameter(torch.randn(1, pos_len + 1, hid_dim))
+        #self.pos_embed = nn.Parameter(torch.randn(1, pos_len + 1, hid_dim))
 
         layers = []
         for i in range (len(depth)):
@@ -105,7 +105,7 @@ class PiT(nn.Module):
         cls_tokens = repeat(self.cls_token, '() n d -> b n d', b = x.size(0))
         x = torch.cat((x, cls_tokens), dim = 1)
 
-        x += self.pos_embed[:, :x.size(1)]
+        #x += self.pos_embed[:, :x.size(1)]
         x = self.patch_drop(x)
 
         # perform PiT
