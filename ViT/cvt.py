@@ -203,4 +203,4 @@ class CvT(nn.Module):
         
     def forward(self, x):
         x = self.layers(x)
-        return self.mlp_head(x)
+        return self.mlp_head(x).unsqueeze(1)

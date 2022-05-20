@@ -10,6 +10,7 @@ from t2t_vit import ReshapeImage
 from cvt import ChannelNorm, FeedForward
 
 from pit import PiT
+from cvt import CvT
 from transformer import Transformer
 
 class Patcher(nn.Module):
@@ -116,3 +117,32 @@ class DmapViT(nn.Module):
         
         cls = (cls @ self._vh_proj).unsqueeze(1)
         return self.o_reshape(cls + crops)
+    
+def main():
+    model = DmapViT(in_channels=124, out_channels=2, embed_dim=2, hid_dim=2, mlp_dim=2, 
+                    depth=12, heads=12, dim_head=64, patch_size=16, vit_heads=16, blk_size=1024, 
+                    pool='cls', patch_dropout=0.2, layer_dropout=0.1, \
+                        
+                    vit = CvT(
+                            in_channels=2, out_channels=2 * 16, 
+                            
+                            s1_emb_dim = 64, s1_emb_kernel = 7, s1_emb_stride = 4, s1_proj_kernel = 3, 
+                            s1_kv_stride = 2, s1_heads = 8, s1_depth = 4, s1_mlp_mult = 4,
+                            
+                            s2_emb_dim = 128, s2_emb_kernel = 3, s2_emb_stride = 2, s2_proj_kernel = 3,
+                            s2_kv_stride = 2, s2_heads = 12, s2_depth = 6, s2_mlp_mult = 4, 
+                            
+                            s3_emb_dim = 256, s3_emb_kernel = 3, s3_emb_stride = 2, s3_proj_kernel = 3, s3_kv_stride = 2,
+                            s3_heads = 16, s3_depth = 8, s3_mlp_mult = 2,
+                            
+                            dropout = 0.1
+                        )
+    )
+    
+    x = torch.randn(2, 124, 128, 128)
+    
+    print(model(x).shape)
+    
+main()
+    
+                            
