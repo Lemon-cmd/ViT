@@ -42,18 +42,14 @@ class ViT(nn.Module):
         self.pos_embed = nn.Parameter(torch.randn(1, pos_len + 1, hid_dim))
         self.patch_embed = nn.Sequential(patcher(), nn.Linear(self.patch_dim, hid_dim))
         self.transformer = Transformer(hid_dim, dim_head, mlp_dim, depth, heads, layer_dropout)
-        
-        d = (patch_size ** 2) ** 2 if keepdim else 1
-            
+                    
         self.mlp_head = nn.Sequential( 
             nn.LayerNorm(hid_dim),
-            nn.Linear(hid_dim, out_channels * d)
+            nn.Linear(hid_dim, out_channels)
         )
         
-        self.reshape = nn.Sequential(
-            Rearrange('b n (c k) -> b (n k) c', c = out_channels),
-            ReshapeImage()
-        )
+        if keepdim:
+            self.reshape = ReshapeImage()
 
     def _pool(self, x):
         return x.mean(dim = 1) if self.pool == 'mean' else x[:, 0]

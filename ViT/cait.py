@@ -177,18 +177,16 @@ class CaiT(nn.Module):
 
         self.patch_transformer = Transformer(hid_dim, dim_head, mlp_dim, depth, heads, layer_dropout)
         self.cls_transformer = Transformer(hid_dim, dim_head, mlp_dim, cls_depth, heads, layer_dropout, cls = True)
- 
-        d = (patch_size ** 2) ** 2 if keepdim else 1
-            
+             
         self.mlp_head = nn.Sequential( 
             nn.LayerNorm(hid_dim),
-            nn.Linear(hid_dim, out_channels * d)
+            nn.Linear(hid_dim, out_channels)
         )
         
-        self.reshape = nn.Sequential(
-            Rearrange('b n (c k) -> b (n k) c', c = out_channels),
-            ReshapeImage()
-        )
+        if keepdim:
+            self.reshape = nn.Sequential(
+                ReshapeImage()
+            )
     
     def _pool(self, x):
         return x.mean(dim = 1) if self.pool == 'mean' else x[:, 0]
