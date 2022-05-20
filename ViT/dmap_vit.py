@@ -115,5 +115,4 @@ class DmapViT(nn.Module):
         crops = self._partitioner(x)[:, : m]
         
         cls = (cls @ self._vh_proj).unsqueeze(1)
-        o = torch.einsum('bni, bkj->bki', cls, crops)
-        return self.o_reshape(o)
+        return self.o_reshape(cls + crops)
