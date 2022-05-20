@@ -47,28 +47,27 @@ class Partitioner(nn.Module):
         super().__init__()
         assert (math.isqrt(blk_size))
         
-        dmodel = hid_dim * (patch_size ** 2)
-        self._crossprod = CrossProdMean(dmodel, dim)
-        self._pos_embed = nn.Parameter(torch.randn(1, blk_size, dmodel))
+        self._crossprod = CrossProdMean(dim, hid_dim)
+        self._pos_embed = nn.Parameter(torch.randn(1, blk_size, hid_dim))
         
         self._patcher = nn.Sequential(
             ReshapeImage(),
             ChannelNorm(dim),
             Padder(patch_height=patch_size, patch_width=patch_size, channel_first=True),
             Rearrange('b c (h p1) (w p2) -> b (h w) (p1 p2 c)', p1 = patch_size, p2 = patch_size),
-            nn.Linear(dim * (patch_size ** 2), dmodel),
-            Transformer(dmodel, dim_head, mlp_dim, depth, heads, dropout),
+            nn.Linear(dim * (patch_size ** 2), hid_dim),
+            Transformer(hid_dim, dim_head, mlp_dim, depth, heads, dropout),
         )
         
         self._reshape = nn.Sequential(
-            nn.Linear(dim, dim * (patch_size ** 2)),
+            nn.Linear(hid_dim, dim * (patch_size ** 2)),
             Rearrange('b n (c p) -> b (n p) c', p = patch_size ** 2)   
         )
 
     def forward(self, x) -> torch.Tensor:
+        x = self._crossprod(x)
         crops = self._patcher(x)
         crops += self._pos_embed[:, : crops.size(1)]
-        crops = self._crossprod(crops)
         return self._reshape(crops)
     
 class DmapViT(nn.Module):
