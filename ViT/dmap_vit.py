@@ -73,14 +73,18 @@ class Partitioner(nn.Module):
     
 class DmapViT(nn.Module):
     def  __init__(self, in_channels, out_channels, embed_dim, hid_dim, mlp_dim, 
-                  patch_size=32, vit_heads=4, blk_size=1024, pool='cls', patch_dropout=0.1, layer_dropout=0.1, vit=None) -> None:
+                  depth=4, heads=8, dim_head=64, patch_size=32, vit_heads=4, blk_size=1024, 
+                  pool='cls', patch_dropout=0.1, layer_dropout=0.1, vit=None) -> None:
+        
         super().__init__()
         assert math.isqrt(blk_size), 'Block size must be a perfect square.'
         assert pool in {'cls', 'mean'}, 'Pool type must be either None, cls (cls token), or mean (mean pooling).'
         
         self._blk_size = blk_size
         self._patch_proj = Patcher(in_channels, embed_dim)
-        self._partitioner = Partitioner(embed_dim, hid_dim, mlp_dim, dropout=patch_dropout, blk_size=blk_size, patch_size=patch_size)
+        self._partitioner = Partitioner(embed_dim, hid_dim, mlp_dim, 
+                                        depth=depth, heads=heads, dim_head=dim_head,
+                                        dropout=patch_dropout, blk_size=blk_size, patch_size=patch_size)
         
         if vit == None:
             self._cls_token = PiT(embed_dim, 
