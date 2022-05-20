@@ -48,7 +48,6 @@ class Partitioner(nn.Module):
         assert (math.isqrt(blk_size))
         
         self._crossprod = CrossProdMean(dim, hid_dim)
-        self._pos_embed = nn.Parameter(torch.randn(1, blk_size, hid_dim))
         
         self._patcher = nn.Sequential(
             ReshapeImage(),
@@ -59,8 +58,10 @@ class Partitioner(nn.Module):
             Transformer(hid_dim, dim_head, mlp_dim, depth, heads, dropout),
         )
         
+        self._pos_embed = nn.Parameter(torch.randn(1, blk_size, hid_dim))
+        
         self._reshape = nn.Sequential(
-            nn.Linear(hid_dim * 2, dim * (patch_size ** 2)),
+            nn.Linear(hid_dim, dim * (patch_size ** 2)),
             Rearrange('b n (c p) -> b (n p) c', p = patch_size ** 2)   
         )
 
@@ -115,3 +116,10 @@ class DmapViT(nn.Module):
         
         cls = (cls @ self._vh_proj).unsqueeze(1)
         return self.o_reshape(cls + crops)
+    
+def main():
+    x = torch.randn(1, 124, 166, 166)
+    model = DmapViT(124, 10, 23, 32, 32)
+    print(model(x))
+    
+main()
