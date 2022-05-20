@@ -117,7 +117,8 @@ class DmapViT(nn.Module):
         
         cls = (cls @ self._vh_proj).unsqueeze(1)
         return self.o_reshape(cls + crops)
-    
+
+""""
 def main():
     model = DmapViT(in_channels=124, out_channels=2, embed_dim=2, hid_dim=2, mlp_dim=2, 
                     depth=12, heads=12, dim_head=64, patch_size=16, vit_heads=16, blk_size=1024, 
@@ -144,5 +145,6 @@ def main():
     print(model(x).shape)
     
 main()
+"""
     
                             
